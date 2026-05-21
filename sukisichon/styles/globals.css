@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand: #2563EB;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: #F0F4FF;
+  font-family: 'Sarabun', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Safe area for iPhone notch */
+.safe-top { padding-top: env(safe-area-inset-top); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+/* Number input style */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] { -moz-appearance: textfield; }
+
+/* Card glass effect */
+.card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 2px 16px rgba(37, 99, 235, 0.06);
+}
+
+.card-blue {
+  background: linear-gradient(135deg, #2563EB 0%, #1d4ed8 100%);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(37, 99, 235, 0.3);
+}
+
+/* Animate in */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up { animation: slideUp 0.3s ease forwards; }
+
+/* Modal backdrop */
+.backdrop {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Expense button hover */
+.expense-btn {
+  transition: all 0.15s ease;
+}
+.expense-btn:active {
+  transform: scale(0.95);
+  background: #EFF6FF;
+}
+
+/* Pulse dot for live */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.pulse { animation: pulse 2s infinite; }
