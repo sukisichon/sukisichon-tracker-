@@ -203,6 +203,7 @@ export default function Home() {
   const [lineman, setLineman]       = useState('')
   const [savingSales, setSavingSales] = useState(false)
   const [salesSaved, setSalesSaved]   = useState(false)
+  const [salesDate, setSalesDate]     = useState(todayISO())
   const [modal, setModal]     = useState(null)  // { type: 'add', cat } or { type: 'edit', data } or { type: 'delete', data }
   const [savingExp, setSavingExp] = useState(false)
   const [expenses, setExpenses]   = useState([])
@@ -244,6 +245,21 @@ export default function Home() {
     setLoading(false)
   }, [])
 
+  // Load sales when date changes
+  async function loadSalesForDate(date) {
+    setSalesSaved(false); setStorefront(''); setGrab(''); setLineman('')
+    try {
+      const res = await fetch('/api/data?date=' + date)
+      const json = await res.json()
+      if (json.sales) {
+        setStorefront(json.sales.storefront || '')
+        setGrab(json.sales.grab || '')
+        setLineman(json.sales.lineman || '')
+        if (json.sales.storefront || json.sales.grab || json.sales.lineman) setSalesSaved(true)
+      }
+    } catch (_) {}
+  }
+
   useEffect(() => { loadData() }, [loadData])
 
   async function saveSales() {
@@ -252,7 +268,7 @@ export default function Home() {
     try {
       await fetch('/api/sales', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date: todayISO(), storefront: Number(storefront)||0, grab: Number(grab)||0, lineman: Number(lineman)||0, total: totalSales })
+        body: JSON.stringify({ date: salesDate, storefront: Number(storefront)||0, grab: Number(grab)||0, lineman: Number(lineman)||0, total: totalSales })
       })
       setSalesSaved(true)
       loadData()
@@ -273,7 +289,7 @@ export default function Home() {
         // Add new
         await fetch('/api/expense', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ date: todayISO(), category, amount, note, time: nowTime() })
+          body: JSON.stringify({ date: salesDate, category, amount, note, time: nowTime() })
         })
       }
       setModal(null)
@@ -381,9 +397,21 @@ export default function Home() {
 
           {/* Sales Card */}
           <div className="card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-gray-800 text-base">ยอดขายวันนี้</h2>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-bold text-gray-800 text-base">บันทึกยอดขาย</h2>
               {salesSaved && <span className="text-xs bg-green-50 text-green-600 font-semibold px-2.5 py-1 rounded-full">✓ บันทึกแล้ว</span>}
+            </div>
+            {/* Date Picker */}
+            <div className="flex items-center gap-2 bg-gray-50 rounded-2xl px-4 py-2.5 mb-3">
+              <span className="text-lg">📅</span>
+              <span className="text-sm font-semibold text-gray-500 shrink-0">วันที่</span>
+              <input
+                type="date"
+                value={salesDate}
+                max={todayISO()}
+                onChange={e => { setSalesDate(e.target.value); loadSalesForDate(e.target.value) }}
+                className="flex-1 text-right text-sm font-bold text-gray-800 bg-transparent outline-none"
+              />
             </div>
             <div className="space-y-3 mb-4">
               {[{label:'หน้าร้าน',val:storefront,set:setStorefront,icon:'🏠'},{label:'Grab',val:grab,set:setGrab,icon:'🟢'},{label:'LINE MAN',val:lineman,set:setLineman,icon:'🟡'}].map(({label,val,set,icon}) => (
@@ -409,7 +437,10 @@ export default function Home() {
 
           {/* Expense Grid */}
           <div className="card p-5">
-            <h2 className="font-bold text-gray-800 text-base mb-4">เพิ่มค่าใช้จ่าย</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-bold text-gray-800 text-base">เพิ่มค่าใช้จ่าย</h2>
+              <span className="text-xs text-blue-500 font-semibold bg-blue-50 px-2.5 py-1 rounded-full">{salesDate === todayISO() ? 'วันนี้' : salesDate}</span>
+            </div>
             <div className="grid grid-cols-4 gap-2.5">
               {EXPENSE_CATS.map(cat => (
                 <button key={cat.key} onClick={() => setModal({ type: 'add', cat })} className="expense-btn flex flex-col items-center justify-center gap-1 rounded-2xl py-3 px-1" style={{ background: cat.color }}>
